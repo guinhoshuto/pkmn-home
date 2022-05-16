@@ -5,6 +5,7 @@ import requests as re
 # adicionar hisui
 
 pokeapi = re.get("https://pokeapi.co/api/v2/pokemon/?limit=2000").json()
+hisui = pd.read_csv("./hisui.csv")
 
 def dex_entry(row): 
     number = row["url"].split("/")
@@ -13,7 +14,7 @@ def dex_entry(row):
 def variant(row):
     entry_name = row["name"].split("-")
     if len(entry_name) > 1:
-        if entry_name[1] in ["alola", "hisui", "galar"]:
+        if entry_name[1] in ["alola", "galar"]:
             return entry_name[1]
      
     return ""
@@ -29,11 +30,15 @@ print(pkmn.tail())
 pkmn["dex_entry"] = pkmn.apply(lambda row: dex_entry(row), axis=1)
 pkmn["variant"] = pkmn.apply(lambda row: variant(row), axis=1) 
 
-variants = pkmn[pkmn["variant"] == "alola"]
+variants = pkmn[(pkmn["variant"] == "alola") | (pkmn["variant"] == "galar")]
 variants["dex_entry"] = variants.apply(lambda row: variant_entry_number(row), axis=1)
 
 pkmn = pkmn.head(898)
 print(variants["dex_entry"])
 
 print(pkmn)
+print(hisui)
+
+pkmn = pd.concat([pkmn, variants],axis=0)
+pkmn = pd.concat([pkmn, hisui], axis=0)
 pkmn.to_csv("pkmn-home.csv")
